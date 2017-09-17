@@ -9,22 +9,35 @@
   (list*->matrix
    (csv->list
     (get-pure-port
-     (string->url "http://www.google.com/finance/historical?q=WFT&output=csv")))))
+     (string->url
+      "http://finance.google.com/finance/historical?q=WFT&output=csv")))))
 
 (define (stock stk)
   (csv->list
    (get-pure-port
-    (string->url (string-append "http://www.google.com/finance/historical?q=" stk "&output=csv")))))
+    (string->url
+     (string-append
+      "http://finance.google.com/finance/historical?q="
+      stk
+      "&output=csv")))))
 
 
 (define (time-price stock)
-  (reverse (map (compose datetime->real (lambda (x) (string->date x "~d-~b-~y")) first) (cdr stock))))
+  (reverse (map
+            (compose
+             datetime->real
+             (lambda (x) (string->date x "~d-~b-~y"))
+             car)
+            (cdr stock))))
+
 
 (define (open-price stock)
   (reverse (map (compose string->number third) (cdr stock))))
 
+
 (define (compare-stocks a b c) 
-  (parameterize ([plot-x-ticks (date-ticks #:number 6 #:formats '("~b-~y"))])
+  (parameterize
+      ([plot-x-ticks (date-ticks #:number 6 #:formats '("~b-~y"))])
     (plot
      (list
       (lines (map vector
@@ -42,10 +55,15 @@
                   (open-price (stock c)))
              #:label c #:color 3)))))
 
+
 (define (daily x)
   (csv->list
    (get-pure-port
-    (string->url (string-append "http://download.finance.yahoo.com/d/quotes.csv?s=" x  "&f=oba")))))
+    (string->url
+     (string-append
+      "http://download.finance.yahoo.com/d/quotes.csv?s="
+      x
+      "&f=oba")))))
 
 
 (define  (yearly x)
@@ -54,7 +72,7 @@
      (lines
       (map vector
            (time-price (stock x))
-           (open-price (stock x))) #:label x  #:color 2 #:))))
+           (open-price (stock x))) #:label x  #:color 2))))
 
 (define (diff x y)
   (parameterize ([plot-x-ticks (date-ticks #:number 6 #:formats '("~b-~y"))])
