@@ -2,9 +2,9 @@
 
 (require (planet neil/csv:2:0) net/url plot math/matrix srfi/19)
 
-(plot-new-window? #t)
+(plot-new-window? #f)
 
-; keeping this function untill i know how to use matrix
+
 (define mtrx
   (list*->matrix
    (csv->list
@@ -12,7 +12,6 @@
      (string->url
       "http://finance.google.com/finance/historical?q=WFT&output=csv")))))
 
-; getting hestorical data for stock, the main function that all others are built upon it
 (define (stock stk)
   (csv->list
    (get-pure-port
@@ -36,6 +35,27 @@
   (reverse (map (compose string->number third) (cdr stock))))
 
 
+(define (compare-stocks a b c) 
+  (parameterize
+      ([plot-x-ticks (date-ticks #:number 6 #:formats '("~b-~y"))])
+    (plot
+     (list
+      (lines (map vector
+                  (time-price (stock a))
+                  (open-price (stock a)))
+             #:label a #:color 1)
+      
+      (lines (map vector
+                  (time-price (stock b))
+                  (open-price (stock b)))
+             #:label b #:color 2)
+      
+      (lines (map vector
+                  (time-price (stock c))
+                  (open-price (stock c)))
+             #:label c #:color 3)))))
+
+
 (define (daily x)
   (csv->list
    (get-pure-port
@@ -43,7 +63,7 @@
      (string-append
       "http://download.finance.yahoo.com/d/quotes.csv?s="
       x
-      "&f=obahl")))))
+      "&f=oba")))))
 
 
 (define  (yearly x)
@@ -53,23 +73,6 @@
       (map vector
            (time-price (stock x))
            (open-price (stock x))) #:label x  #:color 2))))
-
-;(define (compare-stocks a b) 
-;  (parameterize
-;      ([plot-x-ticks (date-ticks #:number 6 #:formats '("~b-~y"))])
-;    (plot
-;     (list
-;      (lines (map vector
-;                  (time-price (stock a))
-;                  (open-price (stock a)))
-;             #:label a #:color 1)
-;      
-;      (lines (map vector
-;                  (time-price (stock b))
-;                  (open-price (stock b)))
-;             #:label b #:color 2)))))
-
-
 
 (define (diff x y)
   (parameterize ([plot-x-ticks (date-ticks #:number 6 #:formats '("~b-~y"))])
@@ -86,11 +89,11 @@
        
        #:color 3 #:line1-color 1 #:line2-color 2 #:label "Difference")))))
 
-;(diff "fb" "spy")
+(diff "fb" "spy")
 
-;(diff "ne" "wft")
-(yearly "wft")
-(daily "wft")
+(diff "ne" "wft")
+(yearly "amd")
+(daily "amd")
 
-;(compare-stocks "slb" "hal")
+(compare-stocks "slb" "bhi" "hal")
 
